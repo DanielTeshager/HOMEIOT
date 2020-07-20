@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block body %}
+  <h1>My Home Dashboard</h1>
+
+<div class="dashboard-container container">
+
+<div class='row'> 
+    
+    <div class='data_container one-third column temp'>
+        <h5 class="container-title temp">Current Temperature</h5>
+        <span id='thermo_temp' class='s_data'>
+    </div>
+    
+    <div class='data_container one-third column hump'>
+        <h5 class="container-title hump">Current Humidity</h5>
+        <span id='thermo_hump' class='s_data'>
+    </div>
+
+    <div class='data_container one-third column lux centered'>
+        <h5 class="container-title lux">Current Ambient Lux</h5>
+        <span id='lux_value' class='s_data'>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="one-third column">&nbsp;</div>
+    <div class="two-thirds column light-controls">
+        <div class="row">
+            <div class="one-third column">
+                    <p class="control-labels" id="brightness">Brightness Contorl</p>
+                    <input type="range" min="1" max="100" value="50" class="b_slider control-input" id="brightness_level">
+                    <span id="c_brightness" class="status_label">50</span>
+            </div>
+            <div class="one-third column">
+                <p class="control-labels">Color Control</p>
+                <input type="color" id='color_picker-input' class='control_input'>
+                <span id="c_color" class="status_label">#000000</span>
+            </div>
+            <div class="one-third column">
+                <p class="control-labels">Power Control</p>
+                <label class="switch">
+                    <input type="checkbox", id='power_input', class="control_input">
+                    <span class="slider round"></span>
+                </label>
+                <span id="c_power" class="status_label">off</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- 
+    <div class="one-third column">
+            <p>Control Brightness</p>
+            <input type="range" min="1" max="100" value="50" class="slider" id="brightness-level"> -->
+  
+</div>
+
+</div><!--End of dashboard container-->
+
+
+
+<div class="loading"><img src="{{ url_for('static', filename='imgs/loader.gif') }}" alt=""></div>
+
+    <script>
+        setInterval(                               //Periodically 
+          function()
+          {
+             $.getJSON(                            //Get some values from the server
+                $SCRIPT_ROOT + '/dashboard',      // At this URL
+                {},                                // With no extra parameters
+                function(data)                     // And when you get a response
+                {
+                 if(Object.keys(data).length==3){
+                     $('.loading').hide()
+                     $("#lux_value").text(data.lux_value); 
+                     $("#thermo_temp").text(data.thermo_temp);  
+                     $("#thermo_hump").text(data.thermo_hump); 
+                 }else{
+                     $('.loading').show()
+                 }
+                  console.log(data)                             // #result element
+                });
+          },
+          5000);    
+          
+
+        //hex to rgb converter
+        String.prototype.convertToRGB = function(){
+        if(this.length != 6){
+                throw "Only six-digit hex colors are allowed.";
+            }
+
+            var aRgbHex = this.match(/.{1,2}/g);
+            var aRgb = [
+                parseInt(aRgbHex[0], 16),
+                parseInt(aRgbHex[1], 16),
+                parseInt(aRgbHex[2], 16)
+            ];
+            return aRgb;
+        }
+
+          //color picker
+          $('#color_picker-input').on('change',function(){
+                // $('#choosen-color').text(jQuery(this).val());
+                color = $(this).val()
+                color = color.slice(1,color.length)
+                rgb=color.convertToRGB()
+                console.log(rgb)
+                console.log(color)
+                $('#c_color').text('#'+color)
+                
+            });
+        //power check box
+        $('#power_input').on('change',function(){
+            $("#power_input").is(":checked") ? $('#c_power').text('On') : $('#c_power').text('Off');
+        })
+       //brightness slider
+       $('#brightness_level').on('change', function() {
+            // console.log($(this).val());
+            $('#c_brightness').text($(this).val())
+        });
+
+        </script>
+{% endblock %}
